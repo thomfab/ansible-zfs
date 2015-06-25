@@ -1,0 +1,47 @@
+---
+# tasks file for ansible-zfs
+
+- name: thomfab/zfs | install python-pycurl package (to add ppa)
+  sudo: yes
+  apt: pkg=python-pycurl state=present
+
+- name: thomfab/zfs | add zfs ppa
+  sudo: yes
+  apt_repository: repo='ppa:zfs-native/stable' update_cache=yes state=present
+
+- name: thomfab/zfs | install zfs package
+  sudo: yes
+  apt: pkg=ubuntu-zfs state=present
+
+- name: thomfab/zfs | install zfs mountall package
+  sudo: yes
+  apt: pkg=mountall state=present
+
+- name: thomfab/zfs | auto import all zpool
+  sudo: yes
+  command: zpool import -a
+  register: result
+  ignore_errors: True
+
+- debug: msg="zpool import returned 1. all pool imported or other error"
+  when: result|failed
+
+- name: thomfab/zfs | add zfs_scrub.sh
+  sudo: yes
+  template: src=zfs_scrub.sh.j2 dest=/usr/bin/zfs_scrub.sh owner=root group=root mode=0755
+
+- name: thomfab/zfs | add zfs scrub to crontab
+  sudo: yes
+  cron: name="ZFS Scrub" user="root" hour="{{ zfs_scrub_hour }}" minute="{{ zfs_scrub_minute }}" weekday="{{ zfs_scrub_weekday }}" job="/usr/bin/zfs_scrub.sh" state=present
+
+# nagios
+
+- name: thomfab/zfs | copy check_zpools.sh file for nagios
+  sudo: yes
+  copy: src=check_zpools.sh dest=/usr/lib/nagios/plugins/check_zpools.sh owner=root group=root mode=0755
+  when: zfs_nagios_enabled
+
+- name: thomfab/zfs | add check zfs pool to nagios nrpe conf
+  sudo: yes
+  lineinfile: dest=/etc/nagios/nrpe.cfg regexp='^command\[check_zpool\]=' line='command[check_zpool]=/usr/lib/nagios/plugins/check_zpools.sh -p {{ zfs_zpoolname }}' state=present
+  when: zfs_nagios_enabled

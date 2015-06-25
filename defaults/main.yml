@@ -1,0 +1,13 @@
+---
+# defaults file for ansible-zfs
+
+# define the time when the ZFS scrub script is launched
+zfs_scrub_hour: "11"
+zfs_scrub_minute: "0"
+# define the weekday for ZFS scrub script (see crontab for possible values)
+zfs_scrub_weekday: "1"
+
+# add check_zpool to nagios nrpe config
+# be sure to install nagios nrpe on your server (for example : https://galaxy.ansible.com/list#/roles/2567)
+zfs_nagios_enabled: true
+zfs_zpoolname: "tank"
