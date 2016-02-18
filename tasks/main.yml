@@ -4,18 +4,22 @@
 - name: thomfab/zfs | install python-pycurl package (to add ppa)
   sudo: yes
   apt: pkg=python-pycurl state=present
-
+  when: ansible_distribution_release == "vivid" or ansible_distribution_release == "trusty" or ansible_distribution_release == "precise"
+  
 - name: thomfab/zfs | add zfs ppa
   sudo: yes
   apt_repository: repo='ppa:zfs-native/stable' update_cache=yes state=present
+  when: ansible_distribution_release == "vivid" or ansible_distribution_release == "trusty" or ansible_distribution_release == "precise"
 
 - name: thomfab/zfs | install zfs package
   sudo: yes
   apt: pkg=ubuntu-zfs state=present
+  when: ansible_distribution_release == "vivid" or ansible_distribution_release == "trusty" or ansible_distribution_release == "precise"
 
 - name: thomfab/zfs | install zfs mountall package
   sudo: yes
   apt: pkg=mountall state=present
+  when: ansible_distribution_release == "vivid" or ansible_distribution_release == "trusty" or ansible_distribution_release == "precise"
 
 - name: thomfab/zfs | auto import all zpool
   sudo: yes
